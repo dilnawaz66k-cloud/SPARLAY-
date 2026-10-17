@@ -1,0 +1,273 @@
+  document.getElementById('sumSub').textContent = 'Rs ' + sub.toLocaleString();
+  return Math.round(sub * 1.17);
+});
+  renderCart();
+function addToCart(id){
+function changeQty(id,delta){
+  m.addEventListener('click',()=>{
+function removeFromCart(id){
+  if(cart.length===0){ toast('Cart is empty','error'); return; }
+  const p = PRODUCTS.find(x=>x.id===id);
+  renderCart();
+function clearCart(){
+  updateTotals();
+function showReceipt(order){
+  const items = cart.length ? cart : [{name:'(Previous sale)',qty:order.items,price:Math.round(order.total/order.items/1.17)}];
+  const sub = items.reduce((s,c)=>s+c.price*c.qty,0);
+  const tax = Math.round(sub*0.17);
+  document.getElementById('receiptContent').innerHTML = `
+    <div class="r-head">
+      <h4>🌸 SPARLAY</h4>
+      <div>Flagship Store • Gulberg III</div>
+      <div>NTN: 1234567-8</div>
+      <div style="margin-top:6px;font-size:.75rem">Order ${order.id} • ${order.date}</div>
+    </div>
+    <div class="r-row"><span>Customer:</span><span>${order.cust}</span></div>
+    <div class="r-items">
+      ${items.map(c=>`<div class="r-row"><span>${c.name} x${c.qty}</span><span>Rs ${c.price*c.qty}</span></div>`).join('')}
+    </div>
+    <div class="r-row"><span>Subtotal</span><span>Rs ${sub}</span></div>
+    <div class="r-row"><span>GST 17%</span><span>Rs ${tax}</span></div>
+    <div class="r-row r-total"><span>TOTAL</span><span>Rs ${order.total}</span></div>
+    <div class="r-row"><span>Payment</span><span>${order.pay}</span></div>
+    <div class="r-foot">
+      <div>━━━━━━━━━━━━━━━━━</div>
+      <div>Thank you for shopping with us! 🌸</div>
+      <div>Powered by SPARLAY</div>
+      <div style="margin-top:6px;font-size:.65rem">FBR Invoice QR: [█████████]</div>
+    </div>
+  `;
+  document.getElementById('receiptModal').classList.add('active');
+}
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+
+/* ==================== INVENTORY ==================== */
+function renderInventory(filter=''){
+  const list = PRODUCTS.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase()));
+  document.getElementById('invCount').textContent = list.length;
+  document.getElementById('invBody').innerHTML = list.map(p=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:10px;background:var(--grad-main);display:grid;place-items:center;font-size:1.2rem">${p.emoji}</div><strong>${p.name}</strong></div></td>
+      <td style="color:#888;font-family:monospace">SKU-${String(p.id).padStart(4,'0')}</td>
+      <td><span class="tag info">${p.cat}</span></td>
+      <td><strong>Rs ${p.price}</strong></td>
+      <td>${p.stock}</td>
+      <td>${p.stock===0?'<span class="tag bad">Out</span>':p.stock<10?'<span class="tag warn">Low</span>':'<span class="tag ok">In Stock</span>'}</td>
+    </tr>
+  `).join('');
+}
+function filterInventory(v){ renderInventory(v); }
+
+/* ==================== CUSTOMERS ==================== */
+function renderCustomers(){
+  document.getElementById('custBody').innerHTML = CUSTOMERS.map(c=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:10px"><div class="avatar" style="width:36px;height:36px;font-size:.8rem">${c.name.split(' ').map(n=>n[0]).join('')}</div><strong>${c.name}</strong></div></td>
+      <td style="font-family:monospace">${c.phone}</td>
+      <td>Rs ${c.wallet.toLocaleString()}</td>
+      <td><strong>Rs ${c.spent.toLocaleString()}</strong></td>
+      <td>${c.visits}</td>
+      <td><span class="tag ${c.tier==='VIP'?'bad':c.tier==='Loyal'?'warn':'info'}">${c.tier}</span></td>
+    </tr>
+  `).join('');
+}
+
+/* ==================== ORDERS ==================== */
+function renderOrders(){
+  document.getElementById('orderBody').innerHTML = ORDERS.map(o=>`
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.cust}</td>
+      <td>${o.items}</td>
+      <td><strong>Rs ${o.total.toLocaleString()}</strong></td>
+      <td>${o.pay}</td>
+      <td><span class="tag ${o.status==='Completed'?'ok':o.status==='Pending'?'warn':'bad'}">${o.status}</span></td>
+      <td style="color:#888;font-size:.82rem">${o.date}</td>
+    </tr>
+  `).join('');
+}
+
+/* ==================== DASHBOARD WIDGETS ==================== */
+function renderRecentTx(){
+  document.getElementById('recentTx').innerHTML = ORDERS.slice(0,5).map(o=>`
+    <div class="tx-item">
+      <div class="avatar">${o.cust.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+      <div class="info"><strong>${o.cust}</strong><span>${o.id} • ${o.items} items • ${o.pay}</span></div>
+      <div class="amt in">+Rs ${o.total.toLocaleString()}</div>
+    </div>
+  `).join('');
+}
+function renderReports(){
+  const top = [...PRODUCTS].sort((a,b)=>(b.price*b.stock)-(a.price*a.stock)).slice(0,5);
+  document.getElementById('topProducts').innerHTML = top.map((p,i)=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px dashed #f5e6ff">
+      <div style="width:28px;height:28px;border-radius:50%;background:var(--grad-accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:.8rem">${i+1}</div>
+      <div style="font-size:1.4rem">${p.emoji}</div>
+      <div style="flex:1"><strong style="font-size:.88rem">${p.name}</strong><div style="font-size:.75rem;color:#888">${p.cat}</div></div>
+      <div style="font-weight:700;color:var(--pink-4)">Rs ${(p.price*p.stock).toLocaleString()}</div>
+    </div>
+  `).join('');
+  const cats = {};
+  PRODUCTS.forEach(p=>{ cats[p.cat] = (cats[p.cat]||0) + p.price*p.stock; });
+  const total = Object.values(cats).reduce((a,b)=>a+b,0);
+  document.getElementById('catSales').innerHTML = Object.entries(cats).map(([k,v])=>{
+    const pct = Math.round(v/total*100);
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px"><strong>${k}</strong><span>Rs ${v.toLocaleString()} (${pct}%)</span></div>
+      <div style="height:8px;background:#f5e6ff;border-radius:50px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--grad-accent);border-radius:50px;transition:width 1s"></div></div>
+    </div>`;
+  }).join('');
+}
+
+/* ==================== KEYBOARD SHORTCUTS ==================== */
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('view-app').classList.contains('active')) return;
+  if(e.key==='F2'){ e.preventDefault(); switchSub('pos'); setTimeout(()=>document.getElementById('posSearch')?.focus(),100); }
+  if(e.key==='F4'){ e.preventDefault(); if(cart.length) openPayModal(); }
+  if(e.key==='Escape'){ document.querySelectorAll('.modal-bg.active').forEach(m=>m.classList.remove('active')); }
+});
+
+/* ==================== TOAST ==================== */
+      <div class="price">Rs ${p.price}</div>
+          <div class="unit">Rs ${c.price} each</div>
+            <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+  } else {
+    box.innerHTML = cart.map(c=>`
+    payMethod = m.dataset.method;
+  const disc = 0;
+  const received = +document.getElementById('payReceived').value || 0;
+  const total = calcTotal();
+  document.getElementById('payBtn').disabled = cart.length===0;
+}
+  document.getElementById('changeBox').style.display = 'none';
+    (currentCat==='All' || p.cat===currentCat) &&
+function calcTotal(){
+          <div class="line-total">Rs ${c.price*c.qty}</div>
+/* ==================== PAYMENT ==================== */
+  if(existing){
+  toast(`+ ${p.name}`,'success');
+    `).join('');
+    <div class="product ${p.stock<10?'low':''}" onclick="addToCart(${p.id})">
+  document.getElementById('sumDisc').textContent = '- Rs ' + disc.toLocaleString();
+}
+function calcChange(){
+  toast(`Bill held (${heldBills.length} in queue)`,'success');
+  const p = PRODUCTS.find(x=>x.id===id);
+  const item = cart.find(c=>c.id===id);
+    document.querySelectorAll('.pay-method').forEach(x=>x.classList.remove('active'));
+  cart = cart.filter(c=>c.id!==id);
+  heldBills.push({cart:[...cart], time:new Date().toLocaleTimeString()});
+  item.qty += delta;
+  if(cart.length===0) return;
+}
+function renderProducts(){
+      <div class="stock">Stock: ${p.stock}</div>
+          <div class="qty">
+          </div>
+    cart.push({...p, qty:1});
+      <div class="cart-item">
+  });
+  const tax = Math.round((sub-disc) * 0.17);
+  const box = document.getElementById('changeBox');
+  document.getElementById('payAmount').textContent = 'Rs ' + total.toLocaleString();
+}
+document.getElementById('posSearch')?.addEventListener('input',renderProducts);
+  document.getElementById('payModal').classList.add('active');
+    (p.name.toLowerCase().includes(q) || p.id.toString().includes(q))
+  const sub = cart.reduce((s,c)=>s + c.price*c.qty, 0);
+          <button class="remove" onclick="removeFromCart(${c.id})">Remove</button>
+function openPayModal(){
+    if(existing.qty >= p.stock){ toast('Not enough stock!','error'); return; }
+}
+  }
+      <div class="thumb">${p.emoji}</div>
+  document.getElementById('sumTax').textContent = 'Rs ' + tax.toLocaleString();
+document.querySelectorAll('.pay-method').forEach(m=>{
+  const total = calcTotal();
+}
+  if(!p) return;
+  if(!item) return;
+    m.classList.add('active');
+  renderCart();
+  cart = [];
+  if(item.qty <= 0) cart = cart.filter(c=>c.id!==id);
+  if(confirm('Clear entire cart?')){
+function updateTotals(){
+  const q = document.getElementById('posSearch')?.value.toLowerCase() || '';
+    </div>
+            <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+        </div>
+  }
+        <div>
+  const total = sub - disc + tax;
+  if(received >= total){
+  document.getElementById('payReceived').value = '';
+function holdBill(){
+
+}
+  );
+        </div>
+  if(cart.length===0) return;
+    existing.qty++;
+  document.getElementById('cartCount').textContent = cart.reduce((s,c)=>s+c.qty,0) + ' items';
+      <div class="name">${p.name}</div>
+  document.getElementById('sumTotal').textContent = 'Rs ' + total.toLocaleString();
+
+  const existing = cart.find(c=>c.id===id);
+}
+  else if(item.qty > p.stock){ item.qty = p.stock; toast('Max stock reached','error'); }
+    cart = [];
+  const sub = cart.reduce((s,c)=>s + c.price*c.qty, 0);
+  const list = PRODUCTS.filter(p=>
+  `).join('') || `<div style="grid-column:1/-1;text-align:center;padding:40px;color:#aaa">No products found</div>`;
+            <span class="qty-val">${c.qty}</span>
+        <div class="right">
+          <div class="name">${c.emoji} ${c.name}</div>
+    box.style.display = 'block';
+  document.getElementById('productGrid').innerHTML = list.map(p=>`
+      </div>
+  renderCart();
+    renderCart();
+    document.getElementById('changeAmt').textContent = (received - total).toLocaleString();
+}
+  }
+  } else {
+}
+    box.style.display = 'none';
+function renderCart(){
+  }
+  const box = document.getElementById('cartItems');
+}
+  if(cart.length===0){
+function completeSale(){
+    box.innerHTML = `<div class="cart-empty"><div class="ico">🛒</div><div>Cart is empty</div><div style="font-size:.78rem;margin-top:4px">Click products to add</div></div>`;
+  const total = calcTotal();
+  } else {
+  const received = +document.getElementById('payReceived').value || 0;
+  if(payMethod==='cash' && received < total){
+    toast('Insufficient amount','error'); return;
+  }
+  // decrement stock
+  cart.forEach(c=>{
+    const p = PRODUCTS.find(x=>x.id===c.id);
+    if(p) p.stock -= c.qty;
+  });
+  // add to orders
+  const newOrder = {
+    id:'#'+(10285+ORDERS.length),
+    cust: document.getElementById('cartCustomer').selectedOptions[0].text.split('•')[0].replace('👤','').trim() || 'Walk-in',
+    items: cart.reduce((s,c)=>s+c.qty,0),
+    total, pay: payMethod==='cash'?'Cash':payMethod==='card'?'Card':'JazzCash',
+    status:'Completed', date:'Just now'
+  };
+  ORDERS.unshift(newOrder);
+  closeModal('payModal');
+  showReceipt(newOrder);
+  cart = [];
+  renderCart();
+  renderProducts();
+  renderOrders();
+  renderRecentTx();
+  renderInventory();
+  toast('Sale completed! 🎉','success');
+}
